@@ -3,22 +3,42 @@
 @implementation PermissionProviderHelper
 - (void) verifyPermission:(NSString *)NSGameObject withCallback:(NSString *)NSCallback
 {
-	// if (iOS >= 7) ask for camera access;
-    if ([AVCaptureDevice respondsToSelector:@selector(requestAccessForMediaType:completionHandler:)]) {
-    [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
-        
-        if (granted == YES) { UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
-                                               ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "true"); }
-        
-        else { UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
-                                ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "false"); }
-    }];
-    }
-	// if (iOS < 7) camera access is always permitted.
-    else {
-        UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
-                         ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "true");
-    }
+		//Detect if Camera is enabled in Restrictions
+        if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]){
+            AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+            
+            if(status == AVAuthorizationStatusAuthorized){
+                //Authorized
+                UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
+                                 ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "true");
+            }
+            else if (status == AVAuthorizationStatusDenied){
+                //Denied
+                UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
+                                 ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "false");
+            }
+            else if (status == AVAuthorizationStatusRestricted){
+                //Restricted
+                UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
+                                 ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "false");
+            }
+            else if (status == AVAuthorizationStatusNotDetermined){
+                //Ask for permission
+                [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+                    
+                    if (granted == YES) { UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
+                                                           ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "true"); }
+                    
+                    else { UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
+                                            ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "false"); }
+                }];
+            }
+        }
+        else{
+			//Camera disabled in Restrictions
+            UnitySendMessage(([NSGameObject cStringUsingEncoding:NSUTF8StringEncoding]),
+                             ([NSCallback cStringUsingEncoding:NSUTF8StringEncoding]), "false");
+        }
 }
 
 @end
