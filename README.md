@@ -15,7 +15,7 @@ The string received will either be "true" or "false".
 NOTE: You must set a Camera Usage Description in the Player Settings.
 
 # Plugin directory structure
-All .h and .m files must be the follow location
+All .h and .m files must be in the follow location:
 
 [ProjectName] > Assets > Plugins > iOS
 
@@ -24,4 +24,4 @@ See Assets > Scenes > SampleScene.unity
 
 SampleScene implements the SampleUsage class.
 
-Camera Usage Description set to "Sample Camera Usage Description"
+Camera Usage Description is set to "Sample Camera Usage Description"
